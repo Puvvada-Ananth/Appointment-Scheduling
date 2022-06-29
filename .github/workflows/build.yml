@@ -2,8 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - master # or the name of your main branch
-
+      - main
 jobs:
   build:
     name: Build
@@ -35,37 +34,11 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-      - name: Setup MSBuild (vswhere-path)
-        id: setup_msbuild_explicit
-        uses: ./
-        with:
-          vswhere-path: C:\ProgramData\chocolatey\bin
-      - name: Setup MSBuild (fallback)
-        id: setup_msbuild_fallback
-        uses: ./
+      - name: Build and analyze
         env:
-          PATH: ''
-
-      - name: Setup MSBuild (x64)
-        id: setup_msbuild_path
-        uses: ./
-        with:
-          vs-prerelease: true
-          msbuild-architecture: 'x64'
-
-      - name: echo msbuild path
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+        shell: powershell
         run: |
-          echo "vswhere-path: ${{ steps.setup_msbuild_explicit.outputs.msbuildPath }}"
-          echo "PATH: ${{ steps.setup_msbuild_path.outputs.msbuildPath }}"
-          echo "Fallback: ${{ steps.setup_msbuild_fallback.outputs.msbuildPath }}"
-
-      - name: echo MSBuild
-        run: msbuild -version
-        # - name: Build and analyze
-        #   env:
-        #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-        #   shell: powershell
-        #   run: |
-        #     .\.sonar\scanner\dotnet-sonarscanner begin /k:"Puvvada-Ananth_setup-msbuild_AYGrlOKvSB1XADPka4R_" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-        #     dotnet build
-        #     .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Puvvada-Ananth_Appointment-Scheduling_AYGws0CDSB1XADPka4Sq" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          dotnet build Appointment.sln
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
