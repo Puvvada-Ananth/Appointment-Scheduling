@@ -42,5 +42,5 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"Puvvada-Ananth_Appointment-Scheduling_AYGws0CDSB1XADPka4Sq" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
           dotnet build Appointment.sln
-          dotnet-coverage collect 'dotnet test' -f xml  -o 'coverage.xml
+          dotnet-coverage collect 'dotnet test' -f xml  -o 'coverage.xml'
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
