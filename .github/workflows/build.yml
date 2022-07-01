@@ -37,15 +37,21 @@ jobs:
       - name: Install dotnet code coverage
         shell: powershell
         run: |
-          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-sonarscanner --version 5.2.0
+      - name: Install dotnet code coverage reporting tool
+        shell: powershell
+        run: |
+          dotnet tool update dotnet-reportgenerator-globaltool -g --version 4.8.7
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Puvvada-Ananth_Appointment-Scheduling_AYGws0CDSB1XADPka4Sq" /d:sonar.cs.vscoveragexml.reportsPaths="*.coverage.xml" /d:sonar.cs.vstest.reportsPaths="*.trx" /d:sonar.verbose=true /d:sonar.log.level="TRACE" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Puvvada-Ananth_Appointment-Scheduling_AYGws0CDSB1XADPka4Sq" /d:sonar.log.level="TRACE" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverageReportPaths="sonarqubecoverage/SonarQube.xml"
+          dotnet restore
           dotnet build Appointment.sln
-          dotnet test "Appointment.csproj" --collect "Code Coverage" --logger trx --results-directory "TestsResults"
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=coverage /p:Exclude=[xunit.*]* ./Appointment.sln
+          reportgenerator "-reports:TestResults/coverage.cobertura.xml" "-targetdir:sonarqubecoverage" "-reporttypes:SonarQube"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
       # - name: Build and analyze
       #   env:
